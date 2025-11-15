@@ -1,10 +1,4 @@
 -- +goose Up
--- Add authentication and additional user fields
-ALTER TABLE users
-ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT '',
-ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT FALSE,
-ADD COLUMN image VARCHAR(500) NOT NULL DEFAULT '';
-
 -- Create sessions table for gin sessions
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,

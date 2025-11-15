@@ -265,6 +265,31 @@ func (q *Queries) GetPagesByUserID(ctx context.Context, userID int32) ([]Page, e
 	return items, nil
 }
 
+const getUserMostRecentPage = `-- name: GetUserMostRecentPage :one
+SELECT id, user_id, name, handle, banner_image, image, bio, is_active, created_at, updated_at FROM pages
+WHERE user_id = $1
+ORDER BY updated_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetUserMostRecentPage(ctx context.Context, userID int32) (Page, error) {
+	row := q.db.QueryRow(ctx, getUserMostRecentPage, userID)
+	var i Page
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Handle,
+		&i.BannerImage,
+		&i.Image,
+		&i.Bio,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updatePage = `-- name: UpdatePage :one
 UPDATE pages
 SET

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS pages (
     banner_image VARCHAR(500),
     image VARCHAR(500),
     bio TEXT,
-    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_active BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -43,6 +43,7 @@ type Querier interface {
 	GetSessionsByUserID(ctx context.Context, userID int32) ([]Session, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, error)
+	GetUserMostRecentPage(ctx context.Context, userID int32) (Page, error)
 	ReorderBlocks(ctx context.Context, arg ReorderBlocksParams) error
 	UpdateBlock(ctx context.Context, arg UpdateBlockParams) (Block, error)
 	UpdateBlockOrder(ctx context.Context, arg UpdateBlockOrderParams) error

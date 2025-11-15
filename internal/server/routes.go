@@ -41,14 +41,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.GET("/", s.HelloWorldHandler)
 	r.GET("/health", s.healthHandler)
 
-	auth := r.Group("/api/auth")
+	auth := r.Group("/api")
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/logout", authHandler.Logout)
 	}
 
-	r.GET("/api/:handle", pageHandler.GetPageByHandle)
+	r.GET("/api/handle/:handle", pageHandler.GetPageByHandle)
 
 	// Protected routes
 	protected := r.Group("/api")
@@ -62,7 +62,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		protected.DELETE("/pages/:id", pageHandler.DeletePage)
 		protected.PUT("/pages/:id/activate", pageHandler.SetActivePage)
 		protected.GET("/pages/:id", pageHandler.GetActivePage)
-		protected.GET("/pages/:handle", pageHandler.CheckHandleExists)
+		protected.GET("/pages/handle/:handle", pageHandler.CheckHandleExists)
+		protected.GET("/pages", pageHandler.GetAllUserPage)
 
 	}
 

@@ -4,7 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    password_hash VARCHAR(255) NOT NULL DEFAULT '',
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    image VARCHAR(500) NOT NULL DEFAULT ''
 );
 
 -- +goose Down

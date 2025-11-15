@@ -61,3 +61,9 @@ LIMIT $1 OFFSET $2;
 -- name: CountUserPages :one
 SELECT COUNT(*) FROM pages
 WHERE user_id = $1;
+
+-- name: GetUserMostRecentPage :one
+SELECT * FROM pages
+WHERE user_id = $1
+ORDER BY updated_at DESC
+LIMIT 1;

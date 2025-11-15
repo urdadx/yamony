@@ -16,7 +16,7 @@ var (
 	ErrHandleAlreadyExists = errors.New("page handle already exists")
 )
 
-func (s *service) CreatePage(ctx context.Context, userID int32, handle string) (*sqlc.Page, error) {
+func (s *service) CreatePage(ctx context.Context, userID int32, handle string, is_active bool) (*sqlc.Page, error) {
 	exists, err := s.db.GetQueries().CheckHandleExists(ctx, sqlc.CheckHandleExistsParams{
 		Handle: handle,
 		ID:     0,
@@ -25,13 +25,13 @@ func (s *service) CreatePage(ctx context.Context, userID int32, handle string) (
 		return nil, err
 	}
 	if exists {
-		return nil, ErrHandleAlreadyExists
+		return nil, ErrPageAlreadyExists
 	}
 
 	params := sqlc.CreatePageParams{
 		UserID:   userID,
 		Handle:   handle,
-		IsActive: true,
+		IsActive: is_active,
 	}
 
 	page, err := s.db.GetQueries().CreatePage(ctx, params)

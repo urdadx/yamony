@@ -22,7 +22,8 @@ func NewPageHandler(service services.Service) *PageHandler {
 }
 
 type CreatePageRequest struct {
-	Handle string `json:"handle" binding:"required,email"`
+	Handle   string `json:"handle"`
+	IsActive bool   `json:"is_active"`
 }
 
 type UpdatePageRequest struct {
@@ -66,7 +67,7 @@ func (h *AuthHandler) CreatePage(c *gin.Context) {
 
 	user := userValue.(*sqlc.GetUserByIDRow)
 
-	page, err := h.service.CreatePage(c.Request.Context(), user.ID, req.Handle)
+	page, err := h.service.CreatePage(c.Request.Context(), user.ID, req.Handle, req.IsActive)
 
 	if err != nil {
 		if err == services.ErrPageAlreadyExists {
@@ -85,7 +86,15 @@ func (h *AuthHandler) CreatePage(c *gin.Context) {
 	}
 
 	session := sessions.Default(c)
+	sessionToken := session.Get(middleware.SessionTokenKey)
 	session.Set(middleware.ActivePageID, page.ID)
+
+	if sessionToken != nil {
+		err = h.service.SyncActivePageToSession(c.Request.Context(), sessionToken.(string), page.ID)
+		if err != nil {
+			fmt.Printf("Warning: failed to sync active page to database session: %v\n", err)
+		}
+	}
 
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -305,7 +314,16 @@ func (h *PageHandler) DeletePage(c *gin.Context) {
 		return
 	}
 
+	sessionToken := session.Get(middleware.SessionTokenKey)
 	session.Set(middleware.ActivePageID, nextPage.ID)
+
+	if sessionToken != nil {
+		err = h.service.SyncActivePageToSession(c.Request.Context(), sessionToken.(string), nextPage.ID)
+		if err != nil {
+			fmt.Printf("Warning: failed to sync active page to database session: %v\n", err)
+		}
+	}
+
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to save session",
@@ -332,6 +350,9 @@ func (h *PageHandler) SetActivePage(c *gin.Context) {
 	}
 
 	session := sessions.Default(c)
+	sessionToken := session.Get(middleware.SessionTokenKey)
+
+	// Update the cookie session
 	session.Set(middleware.ActivePageID, req.PageID)
 
 	err := h.service.SetActivePage(c.Request.Context(), req.PageID)
@@ -348,6 +369,13 @@ func (h *PageHandler) SetActivePage(c *gin.Context) {
 			"error": "failed to set active page",
 		})
 		return
+	}
+
+	if sessionToken != nil {
+		err = h.service.SyncActivePageToSession(c.Request.Context(), sessionToken.(string), req.PageID)
+		if err != nil {
+			fmt.Printf("Warning: failed to sync active page to database session: %v\n", err)
+		}
 	}
 
 	if err := session.Save(); err != nil {
@@ -391,5 +419,45 @@ func (h *PageHandler) GetPageByHandle(c *gin.Context) {
 			CreatedAt:   page.CreatedAt.Time.String(),
 			UpdatedAt:   page.UpdatedAt.Time.String(),
 		},
+	})
+}
+
+func (h *PageHandler) GetAllUserPage(c *gin.Context) {
+	userValue, exists := c.Get(middleware.UserKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	user := userValue.(*sqlc.GetUserByIDRow)
+
+	pages, err := h.service.GetAllUserPage(c.Request.Context(), user.ID)
+	if err != nil {
+		fmt.Println("Get all user pages error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to get all user pages",
+		})
+		return
+	}
+
+	var pageResponses []PageResponse
+	for _, page := range pages {
+		pageResponses = append(pageResponses, PageResponse{
+			ID:          page.ID,
+			Handle:      page.Handle,
+			IsActive:    page.IsActive,
+			Name:        page.Name.String,
+			Image:       page.Image.String,
+			BannerImage: page.BannerImage.String,
+			Bio:         page.Bio.String,
+			CreatedAt:   page.CreatedAt.Time.String(),
+			UpdatedAt:   page.UpdatedAt.Time.String(),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"pages": pageResponses,
 	})
 }

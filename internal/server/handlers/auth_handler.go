@@ -49,7 +49,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	user, sessionToken, err := h.service.RegisterUser(
+	user, sessionToken, activePageID, err := h.service.RegisterUser(
 		c.Request.Context(),
 		req.Username,
 		req.Email,
@@ -73,6 +73,12 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	session := sessions.Default(c)
 	session.Set(middleware.SessionTokenKey, sessionToken)
+
+	// Set active page in session if user has pages (activePageID > 0)
+	if activePageID > 0 {
+		session.Set(middleware.ActivePageID, activePageID)
+	}
+
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to save session",
@@ -101,7 +107,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, sessionToken, err := h.service.LoginUser(
+	user, sessionToken, activePageID, err := h.service.LoginUser(
 		c.Request.Context(),
 		req.Email,
 		req.Password,
@@ -117,11 +123,18 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to login",
 		})
+		fmt.Println("Login error ", err)
 		return
 	}
 
 	session := sessions.Default(c)
 	session.Set(middleware.SessionTokenKey, sessionToken)
+
+	// Restore the user's last active page in the session
+	if activePageID > 0 {
+		session.Set(middleware.ActivePageID, activePageID)
+	}
+
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to save session",
