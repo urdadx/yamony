@@ -46,6 +46,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/logout", authHandler.Logout)
+
+		// Google OAuth routes
+		auth.GET("/auth/google", authHandler.GoogleLogin)
+		auth.GET("/auth/google/callback", authHandler.GoogleCallback)
 	}
 
 	r.GET("/api/handle/:handle", pageHandler.GetPageByHandle)
@@ -55,6 +59,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	protected.Use(middleware.AuthMiddleware(s.services))
 	{
 		protected.GET("/me", authHandler.Me)
+		protected.GET("/sessions", authHandler.GetSessionByUserID)
 
 		// Page routes
 		protected.POST("/pages", authHandler.CreatePage)

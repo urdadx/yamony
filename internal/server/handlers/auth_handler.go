@@ -7,6 +7,9 @@ import (
 	"yamony/internal/server/middleware"
 	"yamony/internal/server/services"
 
+	"crypto/rand"
+	"encoding/base64"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -130,7 +133,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set(middleware.SessionTokenKey, sessionToken)
 
-	// Restore the user's last active page in the session
 	if activePageID > 0 {
 		session.Set(middleware.ActivePageID, activePageID)
 	}
@@ -194,4 +196,102 @@ func (h *AuthHandler) Me(c *gin.Context) {
 			Image:         user.Image,
 		},
 	})
+}
+
+func (h *AuthHandler) GetSessionByUserID(c *gin.Context) {
+	userValue, exists := c.Get(middleware.UserKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	user := userValue.(*sqlc.GetUserByIDRow)
+
+	sessions, err := h.service.GetSessionByUserID(c.Request.Context(), user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to get sessions",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"sessions": sessions,
+	})
+}
+
+func (h *AuthHandler) GoogleLogin(c *gin.Context) {
+	oauthConfig := h.service.GetGoogleOAuthConfig()
+
+	state := generateRandomState()
+
+	// Store state in session to verify in callback
+	session := sessions.Default(c)
+	session.Set("oauth_state", state)
+	if err := session.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to save session",
+		})
+		return
+	}
+
+	url := oauthConfig.AuthCodeURL(state)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func (h *AuthHandler) GoogleCallback(c *gin.Context) {
+	session := sessions.Default(c)
+	savedState := session.Get("oauth_state")
+
+	state := c.Query("state")
+	code := c.Query("code")
+
+	if savedState == nil || state != savedState.(string) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid state parameter",
+		})
+		return
+	}
+
+	session.Delete("oauth_state")
+
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "code not provided",
+		})
+		return
+	}
+
+	// Exchange code for user info and create/login user
+	_, sessionToken, activePageID, err := h.service.GoogleOAuthLogin(c.Request.Context(), code)
+	if err != nil {
+		fmt.Println("Google OAuth error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to authenticate with Google",
+		})
+		return
+	}
+
+	session.Set(middleware.SessionTokenKey, sessionToken)
+
+	if activePageID > 0 {
+		session.Set(middleware.ActivePageID, activePageID)
+	}
+
+	if err := session.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to save session",
+		})
+		return
+	}
+
+	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3001/")
+}
+
+func generateRandomState() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)
 }

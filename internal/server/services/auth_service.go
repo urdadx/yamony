@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -70,7 +72,6 @@ func (s *service) RegisterUser(ctx context.Context, username, email, password st
 		return nil, "", 0, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	// New users don't have pages yet, so activePageID is 0
 	return &user, sessionToken, 0, nil
 }
 
@@ -99,7 +100,6 @@ func (s *service) LoginUser(ctx context.Context, email, password string) (*sqlc.
 	expiresAtPg.Time = expiresAt
 	expiresAtPg.Valid = true
 
-	// Try to get user's most recent page to restore as active page
 	var activePageID int32
 	recentPage, err := s.db.GetQueries().GetUserMostRecentPage(ctx, user.ID)
 	if err == nil {
@@ -117,7 +117,6 @@ func (s *service) LoginUser(ctx context.Context, email, password string) (*sqlc.
 		return nil, "", 0, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	// If user has pages, update the session with the active page ID
 	if activePageID > 0 {
 		var activePageIDPg pgtype.Int4
 		activePageIDPg.Int32 = activePageID
@@ -128,7 +127,6 @@ func (s *service) LoginUser(ctx context.Context, email, password string) (*sqlc.
 			ActivePageID: activePageIDPg,
 		})
 		if err != nil {
-			// Log but don't fail - session is still valid
 			fmt.Printf("Warning: failed to update session with active page: %v\n", err)
 		}
 	}
@@ -175,6 +173,15 @@ func (s *service) LogoutUser(ctx context.Context, sessionToken string) error {
 	return nil
 }
 
+func (s *service) GetSessionByUserID(ctx context.Context, userID int32) ([]sqlc.Session, error) {
+	sessions, err := s.db.GetQueries().GetSessionsByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get sessions by user ID: %w", err)
+	}
+
+	return sessions, nil
+}
+
 func (s *service) SyncActivePageToSession(ctx context.Context, sessionToken string, pageID int32) error {
 	session, err := s.db.GetQueries().GetSessionByToken(ctx, sessionToken)
 	if err != nil {
@@ -206,4 +213,140 @@ func generateSessionToken() (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func (s *service) GetGoogleOAuthConfig() *oauth2.Config {
+	return s.googleOAuthConfig
+}
+
+func (s *service) GoogleOAuthLogin(ctx context.Context, code string) (*sqlc.GetUserByEmailRow, string, int32, error) {
+	// Exchange code for token
+	token, err := s.googleOAuthConfig.Exchange(ctx, code)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("failed to exchange code: %w", err)
+	}
+
+	client := s.googleOAuthConfig.Client(ctx, token)
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("failed to get user info: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var googleUser struct {
+		ID            string `json:"id"`
+		Email         string `json:"email"`
+		VerifiedEmail bool   `json:"verified_email"`
+		Name          string `json:"name"`
+		Picture       string `json:"picture"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&googleUser); err != nil {
+		return nil, "", 0, fmt.Errorf("failed to decode user info: %w", err)
+	}
+
+	// Check if user already exists
+	user, err := s.db.GetQueries().GetUserByEmail(ctx, googleUser.Email)
+	if err != nil && err != pgx.ErrNoRows {
+		return nil, "", 0, fmt.Errorf("failed to check existing user: %w", err)
+	}
+
+	// Create user if doesn't exist
+	if err == pgx.ErrNoRows {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(googleUser.ID), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("failed to hash password: %w", err)
+		}
+
+		params := sqlc.CreateUserParams{
+			Username:      googleUser.Name,
+			Email:         googleUser.Email,
+			PasswordHash:  string(hashedPassword),
+			EmailVerified: googleUser.VerifiedEmail,
+			Image:         googleUser.Picture,
+		}
+
+		newUser, err := s.db.GetQueries().CreateUser(ctx, params)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("failed to create user: %w", err)
+		}
+
+		sessionToken, err := generateSessionToken()
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("failed to generate session token: %w", err)
+		}
+
+		expiresAt := time.Now().Add(7 * 24 * time.Hour)
+		var expiresAtPg pgtype.Timestamp
+		expiresAtPg.Time = expiresAt
+		expiresAtPg.Valid = true
+
+		sessionParams := sqlc.CreateSessionParams{
+			UserID:       newUser.ID,
+			SessionToken: sessionToken,
+			ExpiresAt:    expiresAtPg,
+		}
+
+		_, err = s.db.GetQueries().CreateSession(ctx, sessionParams)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("failed to create session: %w", err)
+		}
+
+		userRow := &sqlc.GetUserByEmailRow{
+			ID:            newUser.ID,
+			Username:      newUser.Username,
+			Email:         newUser.Email,
+			PasswordHash:  string(hashedPassword),
+			EmailVerified: newUser.EmailVerified,
+			Image:         newUser.Image,
+			CreatedAt:     newUser.CreatedAt,
+			UpdatedAt:     newUser.UpdatedAt,
+		}
+
+		return userRow, sessionToken, 0, nil
+	}
+
+	// User exists, create session
+	sessionToken, err := generateSessionToken()
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("failed to generate session token: %w", err)
+	}
+
+	expiresAt := time.Now().Add(7 * 24 * time.Hour)
+	var expiresAtPg pgtype.Timestamp
+	expiresAtPg.Time = expiresAt
+	expiresAtPg.Valid = true
+
+	var activePageID int32
+	recentPage, err := s.db.GetQueries().GetUserMostRecentPage(ctx, user.ID)
+	if err == nil {
+		activePageID = recentPage.ID
+	}
+
+	sessionParams := sqlc.CreateSessionParams{
+		UserID:       user.ID,
+		SessionToken: sessionToken,
+		ExpiresAt:    expiresAtPg,
+	}
+
+	session, err := s.db.GetQueries().CreateSession(ctx, sessionParams)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("failed to create session: %w", err)
+	}
+
+	if activePageID > 0 {
+		var activePageIDPg pgtype.Int4
+		activePageIDPg.Int32 = activePageID
+		activePageIDPg.Valid = true
+
+		_, err = s.db.GetQueries().UpdateSessionWithActivePage(ctx, sqlc.UpdateSessionWithActivePageParams{
+			ID:           session.ID,
+			ActivePageID: activePageIDPg,
+		})
+		if err != nil {
+			fmt.Printf("Warning: failed to update session with active page: %v\n", err)
+		}
+	}
+
+	return &user, sessionToken, activePageID, nil
 }
