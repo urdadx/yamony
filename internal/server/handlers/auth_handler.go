@@ -77,7 +77,6 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set(middleware.SessionTokenKey, sessionToken)
 
-	// Set active page in session if user has pages (activePageID > 0)
 	if activePageID > 0 {
 		session.Set(middleware.ActivePageID, activePageID)
 	}
@@ -227,7 +226,6 @@ func (h *AuthHandler) GoogleLogin(c *gin.Context) {
 
 	state := generateRandomState()
 
-	// Store state in session to verify in callback
 	session := sessions.Default(c)
 	session.Set("oauth_state", state)
 	if err := session.Save(); err != nil {

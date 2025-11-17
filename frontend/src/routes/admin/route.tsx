@@ -1,17 +1,17 @@
-import { useSession } from '@/hooks/use-session'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/admin')({
   component: RouteComponent,
-  beforeLoad: () => {
+  beforeLoad: ({ context, location }) => {
+    const isAuthenticated = context.authState.isAuthenticated
+    if (!isAuthenticated) {
+      throw redirect({ to: "/login", search: location.search });
 
+    }
   }
 })
 
 function RouteComponent() {
-
-  const { currentSession } = useSession()
-  console.log("current session: ", currentSession)
 
   return <div>Hello admin</div>
 }

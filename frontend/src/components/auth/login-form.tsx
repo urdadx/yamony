@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { getLastLoginMethod, setLastLoginMethod } from "@/lib/last-login"
-import { cn } from "@/lib/utils";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { cn, sleep } from "@/lib/utils";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,6 +13,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import Spinner from "../ui/spinner";
 import { GoogleSVG } from "./google-svg";
+import { useAuth } from "@/context/auth-context";
+import { useMutation } from "@tanstack/react-query";
 
 interface LoginFormData {
   email: string;
@@ -27,11 +29,14 @@ export function LoginForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
   } = useForm<LoginFormData>();
 
   const [lastLogin, setLastLogin] = useState<ReturnType<typeof getLastLoginMethod>>(null);
+  const router = useRouter();
+  const { setAuthState } = useAuth();
+
 
   useEffect(() => {
     const lastLoginInfo = getLastLoginMethod();
@@ -42,32 +47,47 @@ export function LoginForm({
     }
   }, [setValue]);
 
-  const handleEmailSignIn = async (data: LoginFormData) => {
-    try {
-      const response = await api.post("/login", {
+
+  const loginMutation = useMutation({
+    mutationFn: async (data: LoginFormData) => {
+      return api.post("/login", {
         email: data.email,
         password: data.password,
       });
-
-      setLastLoginMethod("email", data.email);
-
+    },
+    onSuccess: async (response, variables) => {
+      setLastLoginMethod("email", variables.email);
+      setAuthState({ isAuthenticated: true });
       toast.success(response.data.message || "Login successful!");
-
+      await sleep(1)
       navigate({ to: "/admin/links" });
-    } catch (_error: any) {
+    },
+    onError: () => {
       toast.warning("Invalid email or password");
-    }
+    },
+  });
+
+  const handleEmailSignIn = async (data: LoginFormData) => {
+    loginMutation.mutate(data);
+    router.invalidate()
   };
+
+  const googleLoginMutation = useMutation({
+    mutationFn: async () => {
+      setLastLoginMethod("google");
+      return { redirectUrl: `/api/auth/google` };
+    },
+    onSuccess: (data) => {
+      window.location.href = data.redirectUrl;
+    },
+    onError: () => {
+      toast.warning("Failed to sign in with Google");
+    },
+  });
 
   const handleGoogleSignIn = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    try {
-      setLastLoginMethod("google");
-      window.location.href = `/api/auth/google`;
-    } catch (_error: any) {
-      toast.warning("Failed to sign in with Google");
-    }
+    googleLoginMutation.mutate();
   };
 
   return (
@@ -173,9 +193,9 @@ export function LoginForm({
                       "w-full relative",
                       lastLogin?.method === 'email' && "ring-2 ring-primary/20"
                     )}
-                    disabled={isSubmitting}
+                    disabled={loginMutation.isPending}
                   >
-                    {isSubmitting ? (
+                    {loginMutation.isPending ? (
                       <Spinner className="text-white" />
                     ) : (
                       <>

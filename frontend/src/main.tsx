@@ -3,10 +3,16 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TooltipProvider } from './components/ui/tooltip'
+import { Toaster } from './components/ui/sonner'
+import { AuthProvider, useAuth } from './context/auth-context'
 
 const router = createRouter({
   routeTree,
-  context: {},
+  context: {
+    authState: undefined!,
+  },
   defaultPreload: 'intent',
   scrollRestoration: true,
   defaultStructuralSharing: true,
@@ -14,20 +20,39 @@ const router = createRouter({
 
 })
 
+const queryClient = new QueryClient();
+
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router
   }
 }
 
-const rootElement = document.getElementById('app')
-if (rootElement && !rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <StrictMode>
-      <RouterProvider router={router} />
-    </StrictMode>,
-  )
+function InnerApp() {
+  const { authState } = useAuth();
+  return <RouterProvider router={router} context={{ authState }} />;
 }
 
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <InnerApp />
+          <Toaster richColors theme='light' />
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+const rootElement = document.getElementById("app")!;
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
 

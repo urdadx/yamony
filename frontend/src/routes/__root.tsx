@@ -1,23 +1,22 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
+import type { AuthState } from '@/context/auth-context'
 
-
-const queryClient = new QueryClient()
-
-export const Route = createRootRoute({
+interface MyRouterContext {
+  authState: AuthState;
+}
+export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
     <>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
 
-          <Outlet />
-          <Toaster richColors theme="light" />
+      <Outlet />
+      <Toaster richColors theme="light" />
 
+      {
+        import.meta.env.VITE_ENV === 'development' && (
           <TanStackDevtools
             config={{
               position: 'bottom-right',
@@ -35,8 +34,8 @@ export const Route = createRootRoute({
               },
             ]}
           />
-        </TooltipProvider>
-      </QueryClientProvider>
+        )
+      }
 
     </>
   ),

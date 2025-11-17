@@ -4,14 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { setLastLoginMethod } from "@/lib/last-login";
-import { cn } from "@/lib/utils";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { cn, sleep } from "@/lib/utils";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import Spinner from "../ui/spinner";
 import { GoogleSVG } from "./google-svg";
+import { useAuth } from "@/context/auth-context";
+import { useMutation } from "@tanstack/react-query";
 
 interface RegisterFormData {
   name: string;
@@ -27,37 +29,51 @@ export function RegisterForm({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterFormData>();
 
-  const handleRegister = async (data: RegisterFormData) => {
-    try {
-      const response = await api.post("/register", {
+  const { setAuthState } = useAuth();
+  const router = useRouter();
+
+  const registerMutation = useMutation({
+    mutationFn: async (data: RegisterFormData) => {
+      return await api.post("/register", {
         username: data.name,
         email: data.email,
         password: data.password,
       });
-
+    },
+    onSuccess: async (response, data) => {
       setLastLoginMethod("email", data.email);
-
+      setAuthState({ isAuthenticated: true });
       toast.success(response.data.message || "Account created successfully!");
-
-      navigate({ to: "/" });
-    } catch (_error: any) {
+      await sleep(1);
+      navigate({ to: "/admin/links" });
+    },
+    onError: () => {
       toast.warning("Failed to create account");
-    }
+    },
+  });
+
+  const handleRegister = async (data: RegisterFormData) => {
+    registerMutation.mutate(data);
+    router.invalidate();
   };
 
-  const handleGoogleSignIn = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    try {
+  const googleSignInMutation = useMutation({
+    mutationFn: async () => {
       setLastLoginMethod("google");
-
       window.location.href = `/api/auth/google`;
-    } catch (_error: any) {
+    },
+    onError: () => {
       toast.warning("Failed to sign in with Google");
-    }
+      setAuthState({ isAuthenticated: false });
+    },
+  });
+
+  const handleGoogleSignIn = (event: React.FormEvent) => {
+    event.preventDefault();
+    googleSignInMutation.mutate();
   };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -162,9 +178,9 @@ export function RegisterForm({
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={isSubmitting}
+                    disabled={registerMutation.isPending}
                   >
-                    {isSubmitting ? (
+                    {registerMutation.isPending ? (
                       <Spinner className="text-white" />
                     ) : (
                       <>

@@ -28,6 +28,11 @@ interface SessionsResponse {
   sessions: Session[];
 }
 
+const isSessionExpired = (session: Session): boolean => {
+  if (!session.expires_at || !session.expires_at.Valid) return true;
+  const expiresAt = new Date(session.expires_at.Time).getTime();
+  return expiresAt <= Date.now();
+};
 
 export function useSession() {
   const query = useQuery<Session[]>({
@@ -36,11 +41,10 @@ export function useSession() {
       const response = await api.get<SessionsResponse>("/sessions");
       return response.data.sessions || [];
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 7 * 60 * 1000, 
     retry: false, 
   });
 
-  // Get the current session (most recently updated)
   const currentSession = useMemo(() => {
     if (!query.data || query.data.length === 0) return null;
     
@@ -58,26 +62,6 @@ export function useSession() {
     }, null as Session | null);
   }, [query.data]);
 
-  // Get active sessions (not expired)
-  const activeSessions = useMemo(() => {
-    if (!query.data) return [];
-    
-    const now = new Date().getTime();
-    return query.data.filter(session => {
-      if (!session.expires_at || !session.expires_at.Valid) return false;
-      const expiresAt = new Date(session.expires_at.Time).getTime();
-      return expiresAt > now;
-    });
-  }, [query.data]);
-
-  // Check if session is expired
-  const isSessionExpired = (session: Session): boolean => {
-    if (!session.expires_at || !session.expires_at.Valid) return true;
-    const expiresAt = new Date(session.expires_at.Time).getTime();
-    return expiresAt <= Date.now();
-  };
-
-  // Get active page ID from current session
   const activePageId = useMemo(() => {
     if (!currentSession?.active_page_id || !currentSession.active_page_id.Valid) return null;
     return currentSession.active_page_id.Int32;
@@ -87,7 +71,6 @@ export function useSession() {
     ...query,
     sessions: query.data || [],
     currentSession,
-    activeSessions,
     activePageId,
     isSessionExpired,
   };
