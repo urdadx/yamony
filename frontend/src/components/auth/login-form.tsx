@@ -60,7 +60,7 @@ export function LoginForm({
       setAuthState({ isAuthenticated: true });
       toast.success(response.data.message || "Login successful!");
       await sleep(1)
-      navigate({ to: "/admin/links" });
+      navigate({ to: "/admin/home" });
     },
     onError: () => {
       toast.warning("Invalid email or password");

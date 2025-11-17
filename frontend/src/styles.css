@@ -189,13 +189,27 @@ code {
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', var(--font-sans);
   }
   @font-face {
     font-family: "Inter";
     font-style: normal;
-    font-weight: 100;
-    line-height: 2;
+    font-weight: 400;
     font-display: swap;
     src: url("./assets/fonts/Inter-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Bold.ttf") format("truetype");
   }
 }

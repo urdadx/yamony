@@ -11,7 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminLinksRouteImport } from './routes/admin/links'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminInsightsRouteImport } from './routes/admin/insights'
+import { Route as AdminHomeRouteImport } from './routes/admin/home'
+import { Route as AdminCustomizeRouteImport } from './routes/admin/customize'
+import { Route as AdminChatbotRouteImport } from './routes/admin/chatbot'
 import { Route as legalTermsRouteImport } from './routes/(legal)/terms'
 import { Route as legalPrivacyRouteImport } from './routes/(legal)/privacy'
 import { Route as authRegisterRouteImport } from './routes/(auth)/register'
@@ -28,9 +32,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminLinksRoute = AdminLinksRouteImport.update({
-  id: '/links',
-  path: '/links',
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminInsightsRoute = AdminInsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminHomeRoute = AdminHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCustomizeRoute = AdminCustomizeRouteImport.update({
+  id: '/customize',
+  path: '/customize',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminChatbotRoute = AdminChatbotRouteImport.update({
+  id: '/chatbot',
+  path: '/chatbot',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const legalTermsRoute = legalTermsRouteImport.update({
@@ -67,7 +91,11 @@ export interface FileRoutesByFullPath {
   '/register': typeof authRegisterRoute
   '/privacy': typeof legalPrivacyRoute
   '/terms': typeof legalTermsRoute
-  '/admin/links': typeof AdminLinksRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/customize': typeof AdminCustomizeRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/insights': typeof AdminInsightsRoute
+  '/admin/settings': typeof AdminSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +105,11 @@ export interface FileRoutesByTo {
   '/register': typeof authRegisterRoute
   '/privacy': typeof legalPrivacyRoute
   '/terms': typeof legalTermsRoute
-  '/admin/links': typeof AdminLinksRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/customize': typeof AdminCustomizeRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/insights': typeof AdminInsightsRoute
+  '/admin/settings': typeof AdminSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +120,11 @@ export interface FileRoutesById {
   '/(auth)/register': typeof authRegisterRoute
   '/(legal)/privacy': typeof legalPrivacyRoute
   '/(legal)/terms': typeof legalTermsRoute
-  '/admin/links': typeof AdminLinksRoute
+  '/admin/chatbot': typeof AdminChatbotRoute
+  '/admin/customize': typeof AdminCustomizeRoute
+  '/admin/home': typeof AdminHomeRoute
+  '/admin/insights': typeof AdminInsightsRoute
+  '/admin/settings': typeof AdminSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +136,11 @@ export interface FileRouteTypes {
     | '/register'
     | '/privacy'
     | '/terms'
-    | '/admin/links'
+    | '/admin/chatbot'
+    | '/admin/customize'
+    | '/admin/home'
+    | '/admin/insights'
+    | '/admin/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +150,11 @@ export interface FileRouteTypes {
     | '/register'
     | '/privacy'
     | '/terms'
-    | '/admin/links'
+    | '/admin/chatbot'
+    | '/admin/customize'
+    | '/admin/home'
+    | '/admin/insights'
+    | '/admin/settings'
   id:
     | '__root__'
     | '/'
@@ -120,7 +164,11 @@ export interface FileRouteTypes {
     | '/(auth)/register'
     | '/(legal)/privacy'
     | '/(legal)/terms'
-    | '/admin/links'
+    | '/admin/chatbot'
+    | '/admin/customize'
+    | '/admin/home'
+    | '/admin/insights'
+    | '/admin/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -149,11 +197,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/links': {
-      id: '/admin/links'
-      path: '/links'
-      fullPath: '/admin/links'
-      preLoaderRoute: typeof AdminLinksRouteImport
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/insights': {
+      id: '/admin/insights'
+      path: '/insights'
+      fullPath: '/admin/insights'
+      preLoaderRoute: typeof AdminInsightsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/home': {
+      id: '/admin/home'
+      path: '/home'
+      fullPath: '/admin/home'
+      preLoaderRoute: typeof AdminHomeRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/customize': {
+      id: '/admin/customize'
+      path: '/customize'
+      fullPath: '/admin/customize'
+      preLoaderRoute: typeof AdminCustomizeRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/chatbot': {
+      id: '/admin/chatbot'
+      path: '/chatbot'
+      fullPath: '/admin/chatbot'
+      preLoaderRoute: typeof AdminChatbotRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/(legal)/terms': {
@@ -195,11 +271,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
-  AdminLinksRoute: typeof AdminLinksRoute
+  AdminChatbotRoute: typeof AdminChatbotRoute
+  AdminCustomizeRoute: typeof AdminCustomizeRoute
+  AdminHomeRoute: typeof AdminHomeRoute
+  AdminInsightsRoute: typeof AdminInsightsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
-  AdminLinksRoute: AdminLinksRoute,
+  AdminChatbotRoute: AdminChatbotRoute,
+  AdminCustomizeRoute: AdminCustomizeRoute,
+  AdminHomeRoute: AdminHomeRoute,
+  AdminInsightsRoute: AdminInsightsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

@@ -48,7 +48,7 @@ export function RegisterForm({
       setAuthState({ isAuthenticated: true });
       toast.success(response.data.message || "Account created successfully!");
       await sleep(1);
-      navigate({ to: "/admin/links" });
+      navigate({ to: "/admin/home" });
     },
     onError: () => {
       toast.warning("Failed to create account");

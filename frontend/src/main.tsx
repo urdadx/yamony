@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
 import { AuthProvider, useAuth } from './context/auth-context'
+import { GlobalLoader } from './components/global-loader'
 
 const router = createRouter({
   routeTree,
@@ -17,7 +18,9 @@ const router = createRouter({
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
-
+  defaultPendingComponent: () => (
+    <GlobalLoader />
+  ),
 })
 
 const queryClient = new QueryClient();
@@ -30,6 +33,13 @@ declare module '@tanstack/react-router' {
 
 function InnerApp() {
   const { authState } = useAuth();
+
+  if (authState.isLoading) {
+    return (
+      <GlobalLoader />
+    );
+  }
+
   return <RouterProvider router={router} context={{ authState }} />;
 }
 

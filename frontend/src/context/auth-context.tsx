@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 export interface AuthState {
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export interface User {
@@ -37,24 +38,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
+    isLoading: true,
   });
 
   useEffect(() => {
-    if (!isLoading) {
-      setAuthState({
-        isAuthenticated: !!currentSession,
-      });
-    }
+    setAuthState({
+      isAuthenticated: !!currentSession && !isLoading,
+      isLoading: isLoading,
+    });
   }, [currentSession, isLoading]);
 
   const logout = async () => {
     try {
       await api.post<LogoutResponse>("/logout");
-      setAuthState({ isAuthenticated: false });
+      setAuthState({ isAuthenticated: false, isLoading: false });
     }
     catch (error) {
       console.error("Logout error:", error);
-      setAuthState({ isAuthenticated: false });
+      setAuthState({ isAuthenticated: false, isLoading: false });
     }
   };
 
