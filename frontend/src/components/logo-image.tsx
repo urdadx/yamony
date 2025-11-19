@@ -1,4 +1,4 @@
-import LOGO from "@/assets/yamony-logo.png";
+import LOGO from "@/assets/icons/nucleopass-icon.png";
 import Alfred from "@/assets/yamony-logo.png";
 import { cn } from "@/lib/utils";
 

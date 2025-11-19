@@ -3,8 +3,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuAction,
 } from "@/components/ui/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
+import { MoreVertical } from "lucide-react";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
   items,
@@ -13,6 +17,7 @@ export function NavMain({
     title: string;
     url: string;
     icon?: any;
+    subtitle?: string;
     items?: {
       title: string;
       url: string;
@@ -37,30 +42,50 @@ export function NavMain({
                     tooltip={item.title}
                     className={
                       isMainItemActive
-                        ? "bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/40 active:bg-green-100 dark:active:bg-green-900/40"
-                        : ""
+                        ? "bg-rose-50/80! border border-rose-50 dark:bg-rose-900/30!  active:bg-rose-100! dark:active:bg-rose-900/40!"
+                        : "flex items-center justify-between hover:bg-rose-50"
                     }
                   >
-                    {item.icon && (
-                      <item.icon
-                        color="currentColor"
-                        className={`size-4! text-muted-foreground ${isMainItemActive
-                          ? "text-green-600  dark:text-green-400"
-                          : ""
-                          }`}
-                      />
-                    )}
-                    <span
-                      className={
-                        isMainItemActive
-                          ? "text-green-600  dark:text-green-400 font-medium"
-                          : ""
-                      }
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={cn(
+                        "p-2 rounded-full",
+                        isMainItemActive && "bg-white dark:bg-gray-800 border border-rose-50 dark:border-rose-900"
+                      )}>
+                        {item.icon && (
+                          <item.icon
+                            color="currentColor"
+                            className={`size-5! font-light text-muted-foreground ${isMainItemActive
+                              ? "text-rose-600!  dark:text-rose-400!"
+                              : ""
+                              }`}
+                          />
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span
+
+                        >
+                          {item.title}
+                        </span>
+                        {item.subtitle && (
+                          <span className="text-sm text-muted-foreground">
+                            {item.subtitle}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-full  "
                     >
-                      {item.title}
-                    </span>
+                      <MoreVertical className="size-4" />
+                      <span className="sr-only">More options</span>
+                    </Button>
                   </SidebarMenuButton>
+
                 </Link>
+
                 <div className="py-1">
                   {item.items?.map((subItem) => {
                     const isSubItemActive = pathname === subItem.url;
@@ -70,7 +95,7 @@ export function NavMain({
                         key={subItem.title}
                         className={
                           isSubItemActive
-                            ? "bg-green-100 dark:bg-green-900/30"
+                            ? "bg-rose-100! dark:bg-rose-900/30"
                             : ""
                         }
                       >
@@ -78,7 +103,7 @@ export function NavMain({
                           <span
                             className={
                               isSubItemActive
-                                ? "text-green-600 dark:text-green-400 font-medium"
+                                ? "text-rose-600 dark:text-rose-400 font-medium"
                                 : ""
                             }
                           >

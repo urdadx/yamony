@@ -57,7 +57,7 @@ export function LoginForm({
     },
     onSuccess: async (response, variables) => {
       setLastLoginMethod("email", variables.email);
-      setAuthState({ isAuthenticated: true });
+      setAuthState({ isAuthenticated: true, isLoading: false });
       toast.success(response.data.message || "Login successful!");
       await sleep(1)
       navigate({ to: "/admin/home" });

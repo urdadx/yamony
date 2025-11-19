@@ -1,11 +1,4 @@
 
-import {
-  Bot,
-  ChartNoAxesColumnIncreasing,
-  Link,
-  Settings2,
-  Store,
-} from "lucide-react";
 import type * as React from "react";
 
 import {
@@ -17,41 +10,32 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { UpgradeBanner } from "./upgrade-banner";
 import { NavMain } from "./nav-main";
 import { Logo } from "./logo-image";
 import { Outlet } from "@tanstack/react-router";
 import { Navbar } from "./navbar";
-import { ChooseBlock } from "./choose-block";
+import { HomeIcon } from "@/assets/icons/home-icon";
+import { PaletteIcon } from "@/assets/icons/palette-icon";
+import { UserDropdown } from "./user-dropdown";
+import { Plus } from "lucide-react";
+import { Button } from "./ui/button";
+import { CreateVaultDialog } from "./create-vault-dialog";
 
 const data = {
   navMain: [
     {
-      title: "Home",
+      title: "Personal",
       url: "/admin/home",
-      icon: Link,
+      icon: HomeIcon,
+      subtitle: "338 items",
     },
     {
-      title: "Customize",
+      title: "My Vault",
       url: "/admin/customize",
-      icon: Store,
+      icon: PaletteIcon,
+      subtitle: "338 items",
     },
 
-    {
-      title: "Insights",
-      url: "/admin/insights",
-      icon: ChartNoAxesColumnIncreasing,
-    },
-    {
-      title: "My Chatbot",
-      url: "/admin/chatbot",
-      icon: Bot,
-    },
-    {
-      title: "Settings",
-      url: "/admin/settings",
-      icon: Settings2,
-    },
 
   ],
 };
@@ -60,23 +44,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <SidebarProvider>
-      <Sidebar variant="floating" collapsible="offcanvas" {...props}>
-        <SidebarHeader>
-          <div className="flex gap-2 items-center pb-4">
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader className="px-4">
+          <div className="flex gap-1 items-center py-2">
             <Logo />
             <div className="hidden lg:flex">
-              <h1 className="text-xl font-bold instrument-serif-regular-italic">
-                Yamony
+              <h1 className="text-lg font-bold recoleta-bold ">
+                Nucleopass
               </h1>
             </div>
           </div>
         </SidebarHeader>
         <SidebarContent >
+          <div className="flex items-center justify-between px-4 ">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Vaults
+            </h2>
+            <CreateVaultDialog />
+          </div>
           <NavMain items={data.navMain} />
         </SidebarContent>
         <SidebarFooter>
-          <UpgradeBanner />
-          {/* <PageSwitcher /> */}
+          <UserDropdown />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

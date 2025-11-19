@@ -12,15 +12,15 @@ export function UpgradeBanner() {
 
   return (
     <Card className="shadow-none h-fit gap-2">
-      <CardHeader className="">
+      <div className="px-4 ">
         <CardTitle className="text-sm flex gap-1 font-normal">
           <SolarStarIcon size="20" color="#84cc16" />
           Upgrade to Pro
         </CardTitle>
-        <CardDescription className="text-sm py-1">
+        <CardDescription className="text-sm py-2 leading-tight text-muted-foreground">
           Upgrade now to continue enjoying all features.
         </CardDescription>
-      </CardHeader>
+      </div>
       <div className="grid px-3">
         <a target="_blank" href="/choose-plan" rel="noreferrer">
           <Button
