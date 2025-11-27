@@ -11,7 +11,7 @@ export function GlobalSearch() {
         <Input
           id={id}
           className="peer ps-9 pe-9"
-          placeholder="Search in Personal..."
+          placeholder="Search in Personal"
           type="search"
         />
         <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 peer-disabled:opacity-50">

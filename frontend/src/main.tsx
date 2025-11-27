@@ -49,7 +49,7 @@ function App() {
       <AuthProvider>
         <TooltipProvider>
           <InnerApp />
-          <Toaster richColors theme='light' />
+          <Toaster position='bottom-center' richColors theme='light' />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

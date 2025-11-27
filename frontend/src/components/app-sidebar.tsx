@@ -18,8 +18,11 @@ import { HomeIcon } from "@/assets/icons/home-icon";
 import { PaletteIcon } from "@/assets/icons/palette-icon";
 import { UserDropdown } from "./user-dropdown";
 import { Plus } from "lucide-react";
-import { Button } from "./ui/button";
 import { CreateVaultDialog } from "./create-vault-dialog";
+import { BarChart } from "@/assets/icons/bar-chart-icon";
+import { SettingsIcon } from "@/assets/icons/settings-icon";
+import { SidebarBottomItems } from "./bottom-sidebar";
+import { PhoneIcon } from "@/assets/icons/phone-icon";
 
 const data = {
   navMain: [
@@ -39,6 +42,24 @@ const data = {
 
   ],
 };
+
+const bottomSidebarItems = [
+  {
+    title: "Insights",
+    url: "/admin/insights",
+    icon: BarChart,
+  },
+  {
+    title: "Settings",
+    url: "/admin/settings",
+    icon: SettingsIcon,
+  },
+  {
+    title: "Get on other devices",
+    url: "/admin/get-on-other-devices",
+    icon: PhoneIcon,
+  }
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
@@ -65,6 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavMain items={data.navMain} />
         </SidebarContent>
         <SidebarFooter>
+          <SidebarBottomItems items={bottomSidebarItems} />
           <UserDropdown />
         </SidebarFooter>
         <SidebarRail />
