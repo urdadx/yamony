@@ -12,6 +12,10 @@ INSERT INTO vaults (
 
 -- name: GetVaultByID :one
 SELECT * FROM vaults
+WHERE id = $1;
+
+-- name: GetVaultByIDAndUserID :one
+SELECT * FROM vaults
 WHERE id = $1 AND user_id = $2;
 
 -- name: GetUserVaults :many

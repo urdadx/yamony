@@ -1,6 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { VaultList } from '@/components/vault-list'
-import { VaultItemDetails } from '@/components/vault-item-details'
+import { VaultItemDetails } from '@/components/login-item-details'
+import { CardItemDetails } from '@/components/card-item-details'
+import { NoteItemDetails } from '@/components/note-item-details'
+import { AliasItemDetails } from '@/components/alias-item-details'
 
 
 export const Route = createFileRoute('/admin/home')({
@@ -14,7 +17,10 @@ function RouteComponent() {
         <VaultList />
       </div>
       <div className="flex-1 w-full bg-gray-50/50 smooth-div ">
-        <VaultItemDetails />
+        {/* <VaultItemDetails /> */}
+        {/* <CardItemDetails /> */}
+        {/* <NoteItemDetails /> */}
+        <AliasItemDetails />
       </div>
     </div>
   )

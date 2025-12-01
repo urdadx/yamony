@@ -24,6 +24,17 @@ type Block struct {
 	Properties  []byte           `json:"properties"`
 }
 
+type Device struct {
+	ID            pgtype.UUID      `json:"id"`
+	UserID        int32            `json:"user_id"`
+	DeviceLabel   pgtype.Text      `json:"device_label"`
+	X25519Public  []byte           `json:"x25519_public"`
+	Ed25519Public []byte           `json:"ed25519_public"`
+	RevokedAt     pgtype.Timestamp `json:"revoked_at"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	LastSeen      pgtype.Timestamp `json:"last_seen"`
+}
+
 type Page struct {
 	ID          int32            `json:"id"`
 	UserID      int32            `json:"user_id"`
@@ -62,6 +73,20 @@ type Session struct {
 	ActivePageID pgtype.Int4      `json:"active_page_id"`
 }
 
+type SharingRecord struct {
+	ID              pgtype.UUID      `json:"id"`
+	VaultID         int32            `json:"vault_id"`
+	ItemID          pgtype.UUID      `json:"item_id"`
+	SenderUserID    int32            `json:"sender_user_id"`
+	RecipientUserID int32            `json:"recipient_user_id"`
+	WrappedKey      []byte           `json:"wrapped_key"`
+	WrapIv          []byte           `json:"wrap_iv"`
+	WrapTag         []byte           `json:"wrap_tag"`
+	Status          string           `json:"status"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	AcceptedAt      pgtype.Timestamp `json:"accepted_at"`
+}
+
 type User struct {
 	ID            int32            `json:"id"`
 	Username      string           `json:"username"`
@@ -71,4 +96,161 @@ type User struct {
 	PasswordHash  string           `json:"password_hash"`
 	EmailVerified bool             `json:"email_verified"`
 	Image         string           `json:"image"`
+	KdfSalt       []byte           `json:"kdf_salt"`
+	KdfParams     []byte           `json:"kdf_params"`
+	SrpVerifier   []byte           `json:"srp_verifier"`
+	SrpSalt       []byte           `json:"srp_salt"`
+}
+
+type Vault struct {
+	ID          int32            `json:"id"`
+	UserID      int32            `json:"user_id"`
+	Name        string           `json:"name"`
+	Description pgtype.Text      `json:"description"`
+	Icon        pgtype.Text      `json:"icon"`
+	Theme       pgtype.Text      `json:"theme"`
+	IsFavorite  bool             `json:"is_favorite"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
+type VaultAliasAttachment struct {
+	ID          int32            `json:"id"`
+	AliasItemID int32            `json:"alias_item_id"`
+	Filename    string           `json:"filename"`
+	FilePath    string           `json:"file_path"`
+	FileSize    int32            `json:"file_size"`
+	MimeType    pgtype.Text      `json:"mime_type"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+}
+
+type VaultAliasItem struct {
+	ID          int32            `json:"id"`
+	VaultID     int32            `json:"vault_id"`
+	UserID      int32            `json:"user_id"`
+	Title       string           `json:"title"`
+	AliasPrefix string           `json:"alias_prefix"`
+	AliasSuffix string           `json:"alias_suffix"`
+	ForwardsTo  string           `json:"forwards_to"`
+	Note        pgtype.Text      `json:"note"`
+	IsFavorite  bool             `json:"is_favorite"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	LastUsedAt  pgtype.Timestamp `json:"last_used_at"`
+}
+
+type VaultAttachment struct {
+	ID        pgtype.UUID      `json:"id"`
+	VaultID   int32            `json:"vault_id"`
+	ItemID    pgtype.UUID      `json:"item_id"`
+	ObjectKey string           `json:"object_key"`
+	Size      int64            `json:"size"`
+	Iv        []byte           `json:"iv"`
+	Tag       []byte           `json:"tag"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
+type VaultCardItem struct {
+	ID                    int32            `json:"id"`
+	VaultID               int32            `json:"vault_id"`
+	UserID                int32            `json:"user_id"`
+	Name                  string           `json:"name"`
+	CardNumberEncrypted   string           `json:"card_number_encrypted"`
+	ExpirationDate        pgtype.Text      `json:"expiration_date"`
+	SecurityCodeEncrypted pgtype.Text      `json:"security_code_encrypted"`
+	PinEncrypted          pgtype.Text      `json:"pin_encrypted"`
+	Note                  pgtype.Text      `json:"note"`
+	IsFavorite            bool             `json:"is_favorite"`
+	CreatedAt             pgtype.Timestamp `json:"created_at"`
+	UpdatedAt             pgtype.Timestamp `json:"updated_at"`
+	LastUsedAt            pgtype.Timestamp `json:"last_used_at"`
+}
+
+type VaultItem struct {
+	ID            pgtype.UUID      `json:"id"`
+	VaultID       int32            `json:"vault_id"`
+	ItemType      string           `json:"item_type"`
+	EncryptedBlob []byte           `json:"encrypted_blob"`
+	Iv            []byte           `json:"iv"`
+	Tag           []byte           `json:"tag"`
+	Meta          []byte           `json:"meta"`
+	Version       int32            `json:"version"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+}
+
+type VaultKey struct {
+	ID         int32            `json:"id"`
+	VaultID    int32            `json:"vault_id"`
+	WrappedVek []byte           `json:"wrapped_vek"`
+	WrapIv     []byte           `json:"wrap_iv"`
+	WrapTag    []byte           `json:"wrap_tag"`
+	KdfSalt    []byte           `json:"kdf_salt"`
+	KdfParams  []byte           `json:"kdf_params"`
+	Version    int32            `json:"version"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
+type VaultLoginAttachment struct {
+	ID          int32            `json:"id"`
+	LoginItemID int32            `json:"login_item_id"`
+	Filename    string           `json:"filename"`
+	FilePath    string           `json:"file_path"`
+	FileSize    int32            `json:"file_size"`
+	MimeType    pgtype.Text      `json:"mime_type"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+}
+
+type VaultLoginItem struct {
+	ID                  int32            `json:"id"`
+	VaultID             int32            `json:"vault_id"`
+	UserID              int32            `json:"user_id"`
+	Title               string           `json:"title"`
+	Username            pgtype.Text      `json:"username"`
+	PasswordEncrypted   string           `json:"password_encrypted"`
+	TotpSecretEncrypted pgtype.Text      `json:"totp_secret_encrypted"`
+	Note                pgtype.Text      `json:"note"`
+	IsFavorite          bool             `json:"is_favorite"`
+	CreatedAt           pgtype.Timestamp `json:"created_at"`
+	UpdatedAt           pgtype.Timestamp `json:"updated_at"`
+	LastUsedAt          pgtype.Timestamp `json:"last_used_at"`
+}
+
+type VaultLoginWebsite struct {
+	ID          int32            `json:"id"`
+	LoginItemID int32            `json:"login_item_id"`
+	Url         string           `json:"url"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+}
+
+type VaultNoteAttachment struct {
+	ID         int32            `json:"id"`
+	NoteItemID int32            `json:"note_item_id"`
+	Filename   string           `json:"filename"`
+	FilePath   string           `json:"file_path"`
+	FileSize   int32            `json:"file_size"`
+	MimeType   pgtype.Text      `json:"mime_type"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+}
+
+type VaultNoteItem struct {
+	ID         int32            `json:"id"`
+	VaultID    int32            `json:"vault_id"`
+	UserID     int32            `json:"user_id"`
+	Title      string           `json:"title"`
+	Note       string           `json:"note"`
+	IsFavorite bool             `json:"is_favorite"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+	LastUsedAt pgtype.Timestamp `json:"last_used_at"`
+}
+
+type VaultVersion struct {
+	ID              int32            `json:"id"`
+	VaultID         int32            `json:"vault_id"`
+	ObjectKey       string           `json:"object_key"`
+	Mac             []byte           `json:"mac"`
+	CreatedByDevice pgtype.UUID      `json:"created_by_device"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
 }

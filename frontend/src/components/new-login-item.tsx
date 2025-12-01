@@ -2,7 +2,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "./ui/button"
 import { Sheet, SheetClose, SheetContent } from "./ui/sheet"
 import { ShieldWeakIcon } from "@/assets/icons/shield-weak-icon"
-import { Globe2Icon, Lock, Mail, PaperclipIcon, StickyNote } from "lucide-react"
+import { Globe2Icon, Lock, Mail, PaperclipIcon, PlusIcon, RefreshCcw, StickyNote } from "lucide-react"
 import { Input } from "./ui/input"
 interface NewLoginItemProps {
   open?: boolean
@@ -69,30 +69,35 @@ export const NewLoginItem = ({ open, onOpenChange }: NewLoginItemProps) => {
                       placeholder="Enter your password"
                       className="text-md! rounded-none flex-1 border-gray-300 bg-transparent border-0 focus-visible:ring-offset-0 focus-visible:ring-0 p-0 h-auto"
                     />
-                    <div className="flex items-center gap-1 shrink-0">
-                      <ShieldWeakIcon color="#f97316" className="h-5 w-5" />
-                      <span className="text-sm text-orange-400 font-medium">Weak password</span>
-                    </div>
+                    <Button variant="outline" className="rounded-full" size="icon">
+                      <RefreshCcw />
+                    </Button>
                   </div>
+
                 </div>
               </div>
 
             </div>
-            <div className="flex items-center gap-4 px-4 py-3 rounded-lg border">
-              <Globe2Icon className="h-4 w-4 text-gray-500 shrink-0" />
-              <div className="flex-1 flex flex-col">
-                <label className="block text-sm font-medium text-gray-500">
-                  Websites
-                </label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Add website"
-                    className="text-md! rounded-none flex-1 border-gray-300 bg-transparent border-0 focus-visible:ring-offset-0 focus-visible:ring-0 p-0 h-auto"
-                  />
-
+            <div className="flex flex-col gap-4 px-4 py-3 rounded-lg border">
+              <div className="flex items-center gap-4">
+                <Globe2Icon className="h-4 w-4 text-gray-500 shrink-0" />
+                <div className="flex-1 flex flex-col">
+                  <label className="block text-sm font-medium text-gray-500">
+                    Websites
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      placeholder="https://"
+                      className="text-md! rounded-none flex-1 border-gray-300 bg-transparent border-0 focus-visible:ring-offset-0 focus-visible:ring-0 p-0 h-auto"
+                    />
+                    <Button variant="outline" className="rounded-full" size="icon">
+                      <PlusIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
+
             </div>
             <div className="flex items-center gap-4 px-4 py-3 rounded-lg border">
               <StickyNote className="h-4 w-4 text-gray-500 shrink-0" />

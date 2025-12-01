@@ -19,7 +19,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3001", "https://yamony.com"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
+		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type", "X-Device-Id", "X-Device-Signature", "X-Device-Timestamp"},
 		AllowCredentials: true,
 	}))
 
@@ -37,6 +37,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(s.services)
 	pageHandler := handlers.NewPageHandler(s.services)
+	deviceHandler := handlers.NewDeviceHandler(s.services)
+	vaultKeyHandler := handlers.NewVaultKeyHandler(s.services)
+	vaultItemHandler := handlers.NewVaultItemHandler(s.services)
+	shareHandler := handlers.NewShareHandler(s.services)
+	syncHandler := handlers.NewSyncHandler(s.services)
 
 	r.GET("/", s.HelloWorldHandler)
 	r.GET("/health", s.healthHandler)
@@ -69,6 +74,39 @@ func (s *Server) RegisterRoutes() http.Handler {
 		protected.GET("/pages/:id", pageHandler.GetActivePage)
 		protected.GET("/pages/handle/:handle", pageHandler.CheckHandleExists)
 		protected.GET("/pages", pageHandler.GetAllUserPage)
+
+		// Device routes
+		protected.POST("/devices/register", deviceHandler.RegisterDevice)
+		protected.POST("/devices/verify", deviceHandler.VerifyDevice)
+		protected.GET("/devices", deviceHandler.GetDevices)
+		protected.DELETE("/devices/:id", deviceHandler.RevokeDevice)
+		protected.GET("/users/:user_id/public-keys", deviceHandler.GetUserPublicKeys)
+
+		// Vault key routes
+		protected.POST("/vaults/:id/keys", vaultKeyHandler.UploadVaultKey)
+		protected.GET("/vaults/:id/keys", vaultKeyHandler.GetVaultKey)
+		protected.GET("/vaults/:id/keys/versions", vaultKeyHandler.GetVaultKeyVersions)
+		protected.GET("/vaults/:id/keys/versions/:version", vaultKeyHandler.GetVaultKeyVersion)
+
+		// Vault item routes
+		protected.POST("/vaults/:id/items", vaultItemHandler.CreateVaultItem)
+		protected.GET("/vaults/:id/items", vaultItemHandler.GetVaultItems)
+		protected.GET("/vaults/:id/items/:item_id", vaultItemHandler.GetVaultItem)
+		protected.PUT("/vaults/:id/items/:item_id", vaultItemHandler.UpdateVaultItem)
+		protected.DELETE("/vaults/:id/items/:item_id", vaultItemHandler.DeleteVaultItem)
+
+		// Sharing routes
+		protected.POST("/vaults/:id/share", shareHandler.ShareVault)
+		protected.GET("/vaults/shared", shareHandler.GetSharedVaults)
+		protected.GET("/shares/pending", shareHandler.GetPendingShares)
+		protected.POST("/shares/:id/accept", shareHandler.AcceptShare)
+		protected.POST("/shares/:id/reject", shareHandler.RejectShare)
+		protected.DELETE("/shares/:id", shareHandler.RevokeShare)
+
+		// Sync and versioning routes
+		protected.POST("/vaults/:id/sync/pull", syncHandler.PullVaultChanges)
+		protected.POST("/vaults/:id/sync/commit", syncHandler.CommitVaultChanges)
+		protected.GET("/vaults/:id/versions", syncHandler.GetVaultVersions)
 
 	}
 

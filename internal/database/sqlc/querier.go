@@ -6,52 +6,162 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	AcceptSharingRecord(ctx context.Context, id pgtype.UUID) (SharingRecord, error)
+	// Alias Attachments queries
+	AddAliasAttachment(ctx context.Context, arg AddAliasAttachmentParams) (VaultAliasAttachment, error)
+	// Login Attachments queries
+	AddLoginAttachment(ctx context.Context, arg AddLoginAttachmentParams) (VaultLoginAttachment, error)
+	// Login Websites queries
+	AddLoginWebsite(ctx context.Context, arg AddLoginWebsiteParams) (VaultLoginWebsite, error)
+	// Note Attachments queries
+	AddNoteAttachment(ctx context.Context, arg AddNoteAttachmentParams) (VaultNoteAttachment, error)
 	CheckHandleExists(ctx context.Context, arg CheckHandleExistsParams) (bool, error)
+	CheckUserVaultAccess(ctx context.Context, arg CheckUserVaultAccessParams) (interface{}, error)
 	CountActiveBlocksByPageID(ctx context.Context, pageID int32) (int64, error)
 	CountBlocksByPageID(ctx context.Context, pageID int32) (int64, error)
 	CountUserPages(ctx context.Context, userID int32) (int64, error)
+	CountVaultItems(ctx context.Context, vaultID int32) (int64, error)
+	CountVaultVersions(ctx context.Context, vaultID int32) (int64, error)
+	CreateAliasItem(ctx context.Context, arg CreateAliasItemParams) (VaultAliasItem, error)
 	CreateBlock(ctx context.Context, arg CreateBlockParams) (Block, error)
+	CreateCardItem(ctx context.Context, arg CreateCardItemParams) (VaultCardItem, error)
+	CreateDevice(ctx context.Context, arg CreateDeviceParams) (Device, error)
+	CreateLoginItem(ctx context.Context, arg CreateLoginItemParams) (VaultLoginItem, error)
+	CreateNoteItem(ctx context.Context, arg CreateNoteItemParams) (VaultNoteItem, error)
 	CreatePage(ctx context.Context, arg CreatePageParams) (Page, error)
 	CreatePreferences(ctx context.Context, arg CreatePreferencesParams) (Preference, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	CreateSharingRecord(ctx context.Context, arg CreateSharingRecordParams) (SharingRecord, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	CreateVault(ctx context.Context, arg CreateVaultParams) (Vault, error)
+	CreateVaultItem(ctx context.Context, arg CreateVaultItemParams) (VaultItem, error)
+	CreateVaultKey(ctx context.Context, arg CreateVaultKeyParams) (VaultKey, error)
+	CreateVaultVersion(ctx context.Context, arg CreateVaultVersionParams) (VaultVersion, error)
+	DeleteAliasAttachment(ctx context.Context, arg DeleteAliasAttachmentParams) error
+	DeleteAliasItem(ctx context.Context, arg DeleteAliasItemParams) error
+	DeleteAllAliasAttachments(ctx context.Context, aliasItemID int32) error
+	DeleteAllLoginAttachments(ctx context.Context, loginItemID int32) error
+	DeleteAllLoginWebsites(ctx context.Context, loginItemID int32) error
+	DeleteAllNoteAttachments(ctx context.Context, noteItemID int32) error
 	DeleteBlock(ctx context.Context, id int32) error
 	DeleteBlocksByPageID(ctx context.Context, pageID int32) error
+	DeleteCardItem(ctx context.Context, arg DeleteCardItemParams) error
 	DeleteExpiredSessions(ctx context.Context) error
+	DeleteLoginAttachment(ctx context.Context, arg DeleteLoginAttachmentParams) error
+	DeleteLoginItem(ctx context.Context, arg DeleteLoginItemParams) error
+	DeleteLoginWebsite(ctx context.Context, arg DeleteLoginWebsiteParams) error
+	DeleteNoteAttachment(ctx context.Context, arg DeleteNoteAttachmentParams) error
+	DeleteNoteItem(ctx context.Context, arg DeleteNoteItemParams) error
+	DeleteOldVaultVersions(ctx context.Context, arg DeleteOldVaultVersionsParams) error
 	DeletePage(ctx context.Context, id int32) error
 	DeletePreferences(ctx context.Context, id int32) error
 	DeletePreferencesByPageID(ctx context.Context, pageID int32) error
 	DeleteSession(ctx context.Context, id int32) error
 	DeleteUserSessions(ctx context.Context, userID int32) error
+	DeleteVault(ctx context.Context, arg DeleteVaultParams) error
+	DeleteVaultItem(ctx context.Context, id pgtype.UUID) error
+	DeleteVaultKeys(ctx context.Context, vaultID int32) error
 	GetActiveBlocksByPageID(ctx context.Context, pageID int32) ([]Block, error)
 	GetActivePagesByUserID(ctx context.Context, userID int32) ([]Page, error)
+	GetAliasAttachmentByID(ctx context.Context, arg GetAliasAttachmentByIDParams) (VaultAliasAttachment, error)
+	GetAliasAttachments(ctx context.Context, aliasItemID int32) ([]VaultAliasAttachment, error)
+	GetAliasItemByID(ctx context.Context, arg GetAliasItemByIDParams) (VaultAliasItem, error)
+	GetAllDevicesByUserID(ctx context.Context, userID int32) ([]Device, error)
 	GetAllPages(ctx context.Context, arg GetAllPagesParams) ([]Page, error)
+	GetAllVaultKeyVersions(ctx context.Context, vaultID int32) ([]VaultKey, error)
 	GetBlockByID(ctx context.Context, id int32) (Block, error)
 	GetBlocksByPageID(ctx context.Context, pageID int32) ([]Block, error)
 	GetBlocksByPageIDAndType(ctx context.Context, arg GetBlocksByPageIDAndTypeParams) ([]Block, error)
 	GetBlocksByUserID(ctx context.Context, userID int32) ([]Block, error)
+	GetCardItemByID(ctx context.Context, arg GetCardItemByIDParams) (VaultCardItem, error)
+	GetDeviceByID(ctx context.Context, id pgtype.UUID) (Device, error)
+	GetDevicePublicKeys(ctx context.Context, id pgtype.UUID) (GetDevicePublicKeysRow, error)
+	GetDevicesByUserID(ctx context.Context, userID int32) ([]Device, error)
+	GetLatestVaultVersion(ctx context.Context, vaultID int32) (VaultVersion, error)
+	GetLoginAttachmentByID(ctx context.Context, arg GetLoginAttachmentByIDParams) (VaultLoginAttachment, error)
+	GetLoginAttachments(ctx context.Context, loginItemID int32) ([]VaultLoginAttachment, error)
+	GetLoginItemByID(ctx context.Context, arg GetLoginItemByIDParams) (VaultLoginItem, error)
+	GetLoginWebsites(ctx context.Context, loginItemID int32) ([]VaultLoginWebsite, error)
+	GetNoteAttachmentByID(ctx context.Context, arg GetNoteAttachmentByIDParams) (VaultNoteAttachment, error)
+	GetNoteAttachments(ctx context.Context, noteItemID int32) ([]VaultNoteAttachment, error)
+	GetNoteItemByID(ctx context.Context, arg GetNoteItemByIDParams) (VaultNoteItem, error)
 	GetPageByHandle(ctx context.Context, handle string) (Page, error)
 	GetPageByID(ctx context.Context, id int32) (Page, error)
 	GetPagesByUserID(ctx context.Context, userID int32) ([]Page, error)
+	GetPendingSharingRecordsByRecipientID(ctx context.Context, recipientUserID int32) ([]SharingRecord, error)
 	GetPreferencesByID(ctx context.Context, id int32) (Preference, error)
 	GetPreferencesByPageID(ctx context.Context, pageID int32) (Preference, error)
 	GetPreferencesByUserID(ctx context.Context, userID int32) ([]Preference, error)
 	GetSessionByToken(ctx context.Context, sessionToken string) (Session, error)
 	GetSessionsByUserID(ctx context.Context, userID int32) ([]Session, error)
+	GetSharedVaultsForUser(ctx context.Context, recipientUserID int32) ([]GetSharedVaultsForUserRow, error)
+	GetSharingRecordByID(ctx context.Context, id pgtype.UUID) (SharingRecord, error)
+	GetSharingRecordByVaultAndRecipient(ctx context.Context, arg GetSharingRecordByVaultAndRecipientParams) (SharingRecord, error)
+	GetSharingRecordsByRecipientID(ctx context.Context, recipientUserID int32) ([]SharingRecord, error)
+	GetSharingRecordsByVaultID(ctx context.Context, vaultID int32) ([]SharingRecord, error)
+	GetUserAliasItems(ctx context.Context, userID int32) ([]VaultAliasItem, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, error)
+	GetUserCardItems(ctx context.Context, userID int32) ([]VaultCardItem, error)
+	GetUserDevicePublicKeys(ctx context.Context, userID int32) ([]GetUserDevicePublicKeysRow, error)
+	GetUserLoginItems(ctx context.Context, userID int32) ([]VaultLoginItem, error)
 	GetUserMostRecentPage(ctx context.Context, userID int32) (Page, error)
+	GetUserNoteItems(ctx context.Context, userID int32) ([]VaultNoteItem, error)
+	GetUserVaults(ctx context.Context, userID int32) ([]Vault, error)
+	GetVaultAliasItems(ctx context.Context, arg GetVaultAliasItemsParams) ([]VaultAliasItem, error)
+	GetVaultByID(ctx context.Context, id int32) (Vault, error)
+	GetVaultByIDAndUserID(ctx context.Context, arg GetVaultByIDAndUserIDParams) (Vault, error)
+	GetVaultCardItems(ctx context.Context, arg GetVaultCardItemsParams) ([]VaultCardItem, error)
+	GetVaultItemByID(ctx context.Context, id pgtype.UUID) (VaultItem, error)
+	GetVaultItemsByIDs(ctx context.Context, dollar_1 []pgtype.UUID) ([]VaultItem, error)
+	GetVaultItemsByVaultID(ctx context.Context, vaultID int32) ([]VaultItem, error)
+	GetVaultItemsByVaultIDAndType(ctx context.Context, arg GetVaultItemsByVaultIDAndTypeParams) ([]VaultItem, error)
+	GetVaultKeyByVaultID(ctx context.Context, vaultID int32) (VaultKey, error)
+	GetVaultKeyByVaultIDAndVersion(ctx context.Context, arg GetVaultKeyByVaultIDAndVersionParams) (VaultKey, error)
+	GetVaultLoginItems(ctx context.Context, arg GetVaultLoginItemsParams) ([]VaultLoginItem, error)
+	GetVaultNoteItems(ctx context.Context, arg GetVaultNoteItemsParams) ([]VaultNoteItem, error)
+	GetVaultVersionByID(ctx context.Context, id int32) (VaultVersion, error)
+	GetVaultVersionByIDAndVault(ctx context.Context, arg GetVaultVersionByIDAndVaultParams) (VaultVersion, error)
+	GetVaultVersionsByVaultID(ctx context.Context, arg GetVaultVersionsByVaultIDParams) ([]VaultVersion, error)
+	GetVaultVersionsSinceID(ctx context.Context, arg GetVaultVersionsSinceIDParams) ([]VaultVersion, error)
+	RejectSharingRecord(ctx context.Context, id pgtype.UUID) (SharingRecord, error)
 	ReorderBlocks(ctx context.Context, arg ReorderBlocksParams) error
+	RevokeDevice(ctx context.Context, id pgtype.UUID) error
+	RevokeSharingRecord(ctx context.Context, id pgtype.UUID) error
+	SearchAliasItems(ctx context.Context, arg SearchAliasItemsParams) ([]VaultAliasItem, error)
+	SearchCardItems(ctx context.Context, arg SearchCardItemsParams) ([]VaultCardItem, error)
+	SearchLoginItems(ctx context.Context, arg SearchLoginItemsParams) ([]VaultLoginItem, error)
+	SearchNoteItems(ctx context.Context, arg SearchNoteItemsParams) ([]VaultNoteItem, error)
+	SearchVaultItemsByMeta(ctx context.Context, arg SearchVaultItemsByMetaParams) ([]VaultItem, error)
+	ToggleAliasItemFavorite(ctx context.Context, arg ToggleAliasItemFavoriteParams) (VaultAliasItem, error)
+	ToggleCardItemFavorite(ctx context.Context, arg ToggleCardItemFavoriteParams) (VaultCardItem, error)
+	ToggleLoginItemFavorite(ctx context.Context, arg ToggleLoginItemFavoriteParams) (VaultLoginItem, error)
+	ToggleNoteItemFavorite(ctx context.Context, arg ToggleNoteItemFavoriteParams) (VaultNoteItem, error)
+	ToggleVaultFavorite(ctx context.Context, arg ToggleVaultFavoriteParams) (Vault, error)
+	UpdateAliasItem(ctx context.Context, arg UpdateAliasItemParams) (VaultAliasItem, error)
+	UpdateAliasItemLastUsed(ctx context.Context, arg UpdateAliasItemLastUsedParams) error
 	UpdateBlock(ctx context.Context, arg UpdateBlockParams) (Block, error)
 	UpdateBlockOrder(ctx context.Context, arg UpdateBlockOrderParams) error
+	UpdateCardItem(ctx context.Context, arg UpdateCardItemParams) (VaultCardItem, error)
+	UpdateCardItemLastUsed(ctx context.Context, arg UpdateCardItemLastUsedParams) error
+	UpdateDeviceLastSeen(ctx context.Context, id pgtype.UUID) error
+	UpdateLoginItem(ctx context.Context, arg UpdateLoginItemParams) (VaultLoginItem, error)
+	UpdateLoginItemLastUsed(ctx context.Context, arg UpdateLoginItemLastUsedParams) error
+	UpdateNoteItem(ctx context.Context, arg UpdateNoteItemParams) (VaultNoteItem, error)
+	UpdateNoteItemLastUsed(ctx context.Context, arg UpdateNoteItemLastUsedParams) error
 	UpdatePage(ctx context.Context, arg UpdatePageParams) (Page, error)
 	UpdatePreferences(ctx context.Context, arg UpdatePreferencesParams) (Preference, error)
 	UpdatePreferencesByPageID(ctx context.Context, arg UpdatePreferencesByPageIDParams) (Preference, error)
 	UpdateSessionWithActivePage(ctx context.Context, arg UpdateSessionWithActivePageParams) (Session, error)
 	UpdateUserEmailVerified(ctx context.Context, arg UpdateUserEmailVerifiedParams) error
+	UpdateVault(ctx context.Context, arg UpdateVaultParams) (Vault, error)
+	UpdateVaultItem(ctx context.Context, arg UpdateVaultItemParams) (VaultItem, error)
+	UpdateVaultKey(ctx context.Context, arg UpdateVaultKeyParams) (VaultKey, error)
 	UpsertPreferences(ctx context.Context, arg UpsertPreferencesParams) (Preference, error)
 }
 

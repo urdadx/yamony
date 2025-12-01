@@ -28,6 +28,7 @@ type Service interface {
 	GetAllUserPage(ctx context.Context, userID int32) ([]sqlc.Page, error)
 	GetGoogleOAuthConfig() *oauth2.Config
 	GoogleOAuthLogin(ctx context.Context, code string) (*sqlc.GetUserByEmailRow, string, int32, error)
+	GetDB() database.Service
 }
 
 type service struct {
@@ -51,4 +52,8 @@ func New(db database.Service) Service {
 		db:                db,
 		googleOAuthConfig: googleOAuthConfig,
 	}
+}
+
+func (s *service) GetDB() database.Service {
+	return s.db
 }

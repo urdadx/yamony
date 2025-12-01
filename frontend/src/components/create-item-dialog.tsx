@@ -22,6 +22,9 @@ import { SolarNotebookBoldDuotone } from "@/assets/icons/note-icon"
 import { IcognitoIcon } from "@/assets/icons/icognito-icon"
 import { AddIcon } from "@/assets/icons/add-icon"
 import { NewLoginItem } from "./new-login-item"
+import { NewCardItem } from "./new-card-item"
+import { NewNoteItem } from "./new-note-item"
+import { NewAliasItem } from "./new-alias-item"
 
 type ItemType = "login" | "card" | "note" | "alias"
 
@@ -38,6 +41,9 @@ export function CreateItemDialog({
 }: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [loginItemOpen, setLoginItemOpen] = React.useState(false)
+  const [cardItemOpen, setCardItemOpen] = React.useState(false)
+  const [noteItemOpen, setNoteItemOpen] = React.useState(false)
+  const [aliasItemOpen, setAliasItemOpen] = React.useState(false)
   const isMobile = useIsMobile()
 
   const actualOpen = open !== undefined ? open : isOpen
@@ -46,6 +52,15 @@ export function CreateItemDialog({
   const handleSelectType = (type: ItemType) => {
     if (type === "login") {
       setLoginItemOpen(true)
+      actualOnOpenChange(false)
+    } else if (type === "card") {
+      setCardItemOpen(true)
+      actualOnOpenChange(false)
+    } else if (type === "note") {
+      setNoteItemOpen(true)
+      actualOnOpenChange(false)
+    } else if (type === "alias") {
+      setAliasItemOpen(true)
       actualOnOpenChange(false)
     } else {
       onSelectType?.(type)
@@ -123,6 +138,9 @@ export function CreateItemDialog({
           </DialogContent>
         </Dialog>
         <NewLoginItem open={loginItemOpen} onOpenChange={setLoginItemOpen} />
+        <NewCardItem open={cardItemOpen} onOpenChange={setCardItemOpen} />
+        <NewNoteItem open={noteItemOpen} onOpenChange={setNoteItemOpen} />
+        <NewAliasItem open={aliasItemOpen} onOpenChange={setAliasItemOpen} />
       </>
     )
   }
@@ -148,6 +166,9 @@ export function CreateItemDialog({
         </DrawerContent>
       </Drawer>
       <NewLoginItem open={loginItemOpen} onOpenChange={setLoginItemOpen} />
+      <NewCardItem open={cardItemOpen} onOpenChange={setCardItemOpen} />
+      <NewNoteItem open={noteItemOpen} onOpenChange={setNoteItemOpen} />
+      <NewAliasItem open={aliasItemOpen} onOpenChange={setAliasItemOpen} />
     </>
   )
 }
