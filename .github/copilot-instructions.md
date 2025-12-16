@@ -3,3 +3,5 @@
 3. If the device is mobile, render a `Drawer` component.
 4. If the device is not mobile, render a `Dialog` component.
 5. For inline dynamic tailwind classes, use the `clsx` library to conditionally apply classes.
+6. Use tanstack query for data fetching and state management.
+7. Do not create hooks for api calls, use them directly in the components with tanstack query unless i specifically asked to create a hook.

@@ -10,38 +10,18 @@ import {
   SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavMain } from "./nav-main";
 import { Logo } from "./logo-image";
 import { Outlet } from "@tanstack/react-router";
 import { Navbar } from "./navbar";
-import { HomeIcon } from "@/assets/icons/home-icon";
-import { PaletteIcon } from "@/assets/icons/palette-icon";
 import { UserDropdown } from "./user-dropdown";
-import { Plus } from "lucide-react";
 import { CreateVaultDialog } from "./create-vault-dialog";
 import { BarChart } from "@/assets/icons/bar-chart-icon";
 import { SettingsIcon } from "@/assets/icons/settings-icon";
 import { SidebarBottomItems } from "./bottom-sidebar";
 import { PhoneIcon } from "@/assets/icons/phone-icon";
-
-const data = {
-  navMain: [
-    {
-      title: "Personal",
-      url: "/admin/home",
-      icon: HomeIcon,
-      subtitle: "338 items",
-    },
-    {
-      title: "My Vault",
-      url: "/admin/customize",
-      icon: PaletteIcon,
-      subtitle: "338 items",
-    },
+import { VaultList } from "./vault-list";
 
 
-  ],
-};
 
 const bottomSidebarItems = [
   {
@@ -83,7 +63,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </h2>
             <CreateVaultDialog />
           </div>
-          <NavMain items={data.navMain} />
+          <VaultList />
         </SidebarContent>
         <SidebarFooter>
           <SidebarBottomItems items={bottomSidebarItems} />

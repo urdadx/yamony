@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-
 	"golang.org/x/crypto/hkdf"
 )
 

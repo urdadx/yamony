@@ -73,7 +73,6 @@ func (h *DeviceHandler) RegisterDevice(c *gin.Context) {
 		return
 	}
 
-	// Get user ID from context (set by auth middleware)
 	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
@@ -319,7 +318,7 @@ func (h *DeviceHandler) GetUserPublicKeys(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// VerifyDeviceSignature verifies a signature from a device (middleware helper)
+// VerifyDeviceSignature verifies a signature from a device
 func VerifyDeviceSignature(devicePubKey ed25519.PublicKey, message, signature []byte) bool {
 	return crypto.VerifySignature(devicePubKey, message, signature)
 }

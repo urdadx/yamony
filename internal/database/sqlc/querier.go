@@ -112,7 +112,7 @@ type Querier interface {
 	GetUserLoginItems(ctx context.Context, userID int32) ([]VaultLoginItem, error)
 	GetUserMostRecentPage(ctx context.Context, userID int32) (Page, error)
 	GetUserNoteItems(ctx context.Context, userID int32) ([]VaultNoteItem, error)
-	GetUserVaults(ctx context.Context, userID int32) ([]Vault, error)
+	GetUserVaults(ctx context.Context, userID int32) ([]GetUserVaultsRow, error)
 	GetVaultAliasItems(ctx context.Context, arg GetVaultAliasItemsParams) ([]VaultAliasItem, error)
 	GetVaultByID(ctx context.Context, id int32) (Vault, error)
 	GetVaultByIDAndUserID(ctx context.Context, arg GetVaultByIDAndUserIDParams) (Vault, error)

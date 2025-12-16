@@ -1,13 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "./ui/dialog";
 import {
   Drawer,
@@ -17,7 +15,6 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "./ui/drawer";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -46,44 +43,47 @@ const VAULT_ICON_LIST = Object.entries(VAULT_ICONS).map(([name, component]) => (
   component,
 }));
 
-export const CreateVaultDialog = () => {
-  const [open, setOpen] = React.useState(false);
+interface EditVaultDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  vault?: {
+    id: string;
+    name: string;
+    icon?: string;
+    theme?: string;
+  };
+}
+
+export const EditVaultDialog = ({ open, onOpenChange, vault }: EditVaultDialogProps) => {
   const isMobile = useIsMobile();
+
+  if (!vault) {
+    return null;
+  }
 
   if (!isMobile) {
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="ghost" className="size-8 p-0 text-muted-foreground hover:text-foreground">
-            <Plus className="size-5" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[550px] rounded-xl border-none bg-clip-padding shadow-2xl ring-4 ring-neutral-200/80 outline-none md:max-w-2xl dark:bg-neutral-800 dark:ring-neutral-900">
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="rounded-xl border-none bg-clip-padding shadow-2xl ring-4 ring-neutral-200/80 outline-none md:max-w-2xl dark:bg-neutral-800 dark:ring-neutral-900">
           <DialogHeader>
-            <DialogTitle>Create Vault</DialogTitle>
-
+            <DialogTitle>Edit Vault</DialogTitle>
           </DialogHeader>
-          <VaultForm onSuccess={() => setOpen(false)} />
+          <VaultForm key={vault.id} vault={vault} onSuccess={() => onOpenChange(false)} />
         </DialogContent>
       </Dialog>
     );
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant="ghost" className="size-8 p-0 text-muted-foreground hover:text-foreground">
-          <Plus className="size-5" />
-        </Button>
-      </DrawerTrigger>
+    <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Create Vault</DrawerTitle>
+          <DrawerTitle>Edit Vault</DrawerTitle>
           <DrawerDescription>
-            Create a new vault to organize your items. Choose a title, color, and icon.
+            Update your vault details. Change the title, color, and icon.
           </DrawerDescription>
         </DrawerHeader>
-        <VaultForm className="px-4" onSuccess={() => setOpen(false)} />
+        <VaultForm key={vault.id} className="px-4" vault={vault} onSuccess={() => onOpenChange(false)} />
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
@@ -94,22 +94,32 @@ export const CreateVaultDialog = () => {
   );
 };
 
-function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { onSuccess?: () => void }) {
-  const [title, setTitle] = React.useState("");
-  const [selectedColor, setSelectedColor] = React.useState(VAULT_COLORS[0].value);
-  const [selectedIcon, setSelectedIcon] = React.useState("Home");
+function VaultForm({
+  className,
+  vault,
+  onSuccess
+}: React.ComponentProps<"form"> & {
+  vault: {
+    id: string;
+    name: string;
+    icon?: string;
+    theme?: string;
+  };
+  onSuccess?: () => void;
+}) {
+  const [title, setTitle] = React.useState(vault.name);
+  const [selectedColor, setSelectedColor] = React.useState(vault.theme || VAULT_COLORS[0].value);
+  const [selectedIcon, setSelectedIcon] = React.useState(vault.icon || "Home");
 
   const queryClient = useQueryClient();
 
-  const createVault = useMutation({
+  const updateVault = useMutation({
     mutationFn: async (data: {
       name: string;
-      description?: string;
       icon?: string;
       theme?: string;
-      is_favorite?: boolean;
     }) => {
-      const response = await api.post("/vaults", data);
+      const response = await api.put(`/vaults/${vault.id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -126,22 +136,16 @@ function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { on
     }
 
     try {
-      await createVault.mutateAsync({
+      await updateVault.mutateAsync({
         name: title,
         icon: selectedIcon,
         theme: selectedColor,
-        is_favorite: false,
       });
 
-      toast.success("Vault created successfully!");
-
-      setTitle("");
-      setSelectedColor(VAULT_COLORS[0].value);
-      setSelectedIcon("Home");
-
+      toast.success("Vault updated successfully!");
       onSuccess?.();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create vault";
+      const errorMessage = error instanceof Error ? error.message : "Failed to update vault";
       toast.error(errorMessage);
     }
   };
@@ -155,7 +159,7 @@ function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { on
           placeholder="Enter vault title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          disabled={createVault.isPending}
+          disabled={updateVault.isPending}
         />
       </div>
 
@@ -167,7 +171,7 @@ function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { on
               key={color.value}
               type="button"
               onClick={() => setSelectedColor(color.value)}
-              disabled={createVault.isPending}
+              disabled={updateVault.isPending}
               className={cn(
                 "size-10 rounded-full transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed",
                 selectedColor === color.value && "ring-2 ring-offset-2 ring-foreground"
@@ -189,7 +193,7 @@ function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { on
                 key={icon.name}
                 type="button"
                 onClick={() => setSelectedIcon(icon.name)}
-                disabled={createVault.isPending}
+                disabled={updateVault.isPending}
                 className={cn(
                   "flex items-center justify-center p-3 rounded-lg border border-rose-50 transition-all hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed",
                   selectedIcon === icon.name && "bg-accent border-rose-100"
@@ -203,8 +207,8 @@ function VaultForm({ className, onSuccess }: React.ComponentProps<"form"> & { on
         </div>
       </div>
 
-      <Button type="submit" disabled={createVault.isPending}>
-        {createVault.isPending ? "Creating..." : "Create Vault"}
+      <Button type="submit" disabled={updateVault.isPending}>
+        {updateVault.isPending ? "Updating..." : "Update Vault"}
       </Button>
     </form>
   );

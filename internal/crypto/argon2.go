@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// KDF stands for Key Derivation Function
 // KDFParams holds the parameters for Argon2id key derivation
 type KDFParams struct {
 	Time        uint32 `json:"time"`
@@ -39,7 +40,7 @@ func MobileKDFParams() KDFParams {
 // GenerateSalt creates a cryptographically secure random salt
 func GenerateSalt(length int) ([]byte, error) {
 	if length <= 0 {
-		length = 32 // default 256 bits
+		length = 32
 	}
 	salt := make([]byte, length)
 	if _, err := rand.Read(salt); err != nil {

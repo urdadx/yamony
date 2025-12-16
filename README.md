@@ -376,26 +376,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Cryptography powered by Go's crypto packages
 - Frontend built with React and TanStack Router
 
-## Tech Stack
 
-### Backend
-- **Language**: Go 1.21+
-- **Web Framework**: Gin
-- **Database**: PostgreSQL 14+ with pgx driver
-- **SQL Code Generation**: sqlc
-- **Migrations**: goose
-- **Cryptography**: golang.org/x/crypto
-
-### Frontend
-- **Framework**: React
-- **Router**: TanStack Router
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-
-### DevOps
-- **Containerization**: Docker
-- **Orchestration**: Docker Compose
-- **CI/CD**: GitHub Actions (recommended)
 
 ## Roadmap
 
@@ -411,14 +392,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [ ] Team/organization features
 - [ ] Admin dashboard
 
-## Support
-
-For questions, issues, or suggestions:
-
-- Open an issue on GitHub
-- Check existing documentation in `docs/`
-- Review API documentation in `API_DOCS.md`
-- Contact: support@yamony.com
-
----
 

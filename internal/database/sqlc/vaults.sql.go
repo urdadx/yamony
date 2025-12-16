@@ -73,20 +73,38 @@ func (q *Queries) DeleteVault(ctx context.Context, arg DeleteVaultParams) error 
 }
 
 const getUserVaults = `-- name: GetUserVaults :many
-SELECT id, user_id, name, description, icon, theme, is_favorite, created_at, updated_at FROM vaults
-WHERE user_id = $1
-ORDER BY is_favorite DESC, updated_at DESC
+SELECT 
+    v.id, v.user_id, v.name, v.description, v.icon, v.theme, v.is_favorite, v.created_at, v.updated_at,
+    COALESCE(COUNT(vi.id), 0)::int AS item_count
+FROM vaults v
+LEFT JOIN vault_items vi ON v.id = vi.vault_id
+WHERE v.user_id = $1
+GROUP BY v.id
+ORDER BY v.is_favorite DESC, v.updated_at DESC
 `
 
-func (q *Queries) GetUserVaults(ctx context.Context, userID int32) ([]Vault, error) {
+type GetUserVaultsRow struct {
+	ID          int32            `json:"id"`
+	UserID      int32            `json:"user_id"`
+	Name        string           `json:"name"`
+	Description pgtype.Text      `json:"description"`
+	Icon        pgtype.Text      `json:"icon"`
+	Theme       pgtype.Text      `json:"theme"`
+	IsFavorite  bool             `json:"is_favorite"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	ItemCount   int32            `json:"item_count"`
+}
+
+func (q *Queries) GetUserVaults(ctx context.Context, userID int32) ([]GetUserVaultsRow, error) {
 	rows, err := q.db.Query(ctx, getUserVaults, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Vault{}
+	items := []GetUserVaultsRow{}
 	for rows.Next() {
-		var i Vault
+		var i GetUserVaultsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -97,6 +115,7 @@ func (q *Queries) GetUserVaults(ctx context.Context, userID int32) ([]Vault, err
 			&i.IsFavorite,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ItemCount,
 		); err != nil {
 			return nil, err
 		}

@@ -40,6 +40,7 @@ func AuthMiddleware(service services.Service) gin.HandlerFunc {
 			return
 		}
 
+		c.Set("user_id", user.ID)
 		c.Set(UserKey, user)
 		c.Next()
 	}

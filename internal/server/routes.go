@@ -36,12 +36,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(s.services)
-	pageHandler := handlers.NewPageHandler(s.services)
 	deviceHandler := handlers.NewDeviceHandler(s.services)
+	vaultHandler := handlers.NewVaultHandler(s.services)
 	vaultKeyHandler := handlers.NewVaultKeyHandler(s.services)
 	vaultItemHandler := handlers.NewVaultItemHandler(s.services)
 	shareHandler := handlers.NewShareHandler(s.services)
 	syncHandler := handlers.NewSyncHandler(s.services)
+	uploadHandler := handlers.NewUploadHandler()
 
 	r.GET("/", s.HelloWorldHandler)
 	r.GET("/health", s.healthHandler)
@@ -57,8 +58,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 		auth.GET("/auth/google/callback", authHandler.GoogleCallback)
 	}
 
-	r.GET("/api/handle/:handle", pageHandler.GetPageByHandle)
-
 	// Protected routes
 	protected := r.Group("/api")
 	protected.Use(middleware.AuthMiddleware(s.services))
@@ -66,21 +65,19 @@ func (s *Server) RegisterRoutes() http.Handler {
 		protected.GET("/me", authHandler.Me)
 		protected.GET("/sessions", authHandler.GetSessionByUserID)
 
-		// Page routes
-		protected.POST("/pages", authHandler.CreatePage)
-		protected.PUT("/pages", pageHandler.UpdatePage)
-		protected.DELETE("/pages/:id", pageHandler.DeletePage)
-		protected.PUT("/pages/:id/activate", pageHandler.SetActivePage)
-		protected.GET("/pages/:id", pageHandler.GetActivePage)
-		protected.GET("/pages/handle/:handle", pageHandler.CheckHandleExists)
-		protected.GET("/pages", pageHandler.GetAllUserPage)
-
 		// Device routes
 		protected.POST("/devices/register", deviceHandler.RegisterDevice)
 		protected.POST("/devices/verify", deviceHandler.VerifyDevice)
 		protected.GET("/devices", deviceHandler.GetDevices)
 		protected.DELETE("/devices/:id", deviceHandler.RevokeDevice)
 		protected.GET("/users/:user_id/public-keys", deviceHandler.GetUserPublicKeys)
+
+		// Vault routes
+		protected.POST("/vaults", vaultHandler.CreateVault)
+		protected.GET("/vaults", vaultHandler.GetVaults)
+		protected.GET("/vaults/:id", vaultHandler.GetVault)
+		protected.PUT("/vaults/:id", vaultHandler.UpdateVault)
+		protected.DELETE("/vaults/:id", vaultHandler.DeleteVault)
 
 		// Vault key routes
 		protected.POST("/vaults/:id/keys", vaultKeyHandler.UploadVaultKey)
@@ -107,6 +104,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 		protected.POST("/vaults/:id/sync/pull", syncHandler.PullVaultChanges)
 		protected.POST("/vaults/:id/sync/commit", syncHandler.CommitVaultChanges)
 		protected.GET("/vaults/:id/versions", syncHandler.GetVaultVersions)
+
+		// Storage upload route
+		protected.POST("/storage/upload", uploadHandler.UploadToGCS)
 
 	}
 

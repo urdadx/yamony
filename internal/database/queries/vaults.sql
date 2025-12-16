@@ -19,9 +19,14 @@ SELECT * FROM vaults
 WHERE id = $1 AND user_id = $2;
 
 -- name: GetUserVaults :many
-SELECT * FROM vaults
-WHERE user_id = $1
-ORDER BY is_favorite DESC, updated_at DESC;
+SELECT 
+    v.*,
+    COALESCE(COUNT(vi.id), 0)::int AS item_count
+FROM vaults v
+LEFT JOIN vault_items vi ON v.id = vi.vault_id
+WHERE v.user_id = $1
+GROUP BY v.id
+ORDER BY v.is_favorite DESC, v.updated_at DESC;
 
 -- name: UpdateVault :one
 UPDATE vaults

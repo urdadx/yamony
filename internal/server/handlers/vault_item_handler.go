@@ -95,7 +95,6 @@ func (h *VaultItemHandler) CreateVaultItem(c *gin.Context) {
 
 	queries := h.services.GetDB().GetQueries()
 
-	// Verify vault belongs to user
 	vault, err := queries.GetVaultByID(c.Request.Context(), vaultID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "vault not found"})
